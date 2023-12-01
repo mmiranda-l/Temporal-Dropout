@@ -16,8 +16,15 @@ brief data description
 
 
 ## Execution example
-For examples on execution go to [src/README.md](src/README.md)
+* For training run
+```
+python train.py -s path/to/config/file.yaml
+```
 
+* For evaluating run
+```
+...
+```
 
 ## Authors and acknowledgment
 Miro Miranda and Francisco Mena. 

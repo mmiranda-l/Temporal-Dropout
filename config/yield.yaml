@@ -1,0 +1,43 @@
+output_dir_folder: ./out/
+input_dir_folder: ./data/
+identifier_method: StandardIF
+
+data_name: yield_cereals
+
+training: 
+  max_epochs: 1000
+  batch_size: 32
+  emb_dim: 128 
+  early_stop_args: 
+    min_delta: 0.05
+    mode: min
+    patience: 5
+    verbose: True
+
+experiment: 
+  #group: field_id
+
+  runs: 1 #repetitions
+  kfolds: 10
+  mlflow_runs_exp: True 
+  preprocess: 
+    fillnan: True
+    fillnan_value: 0.0
+    flatten: False
+    form: zscore
+    input_views: ["S2", "weather"]  #inputs to normalize
+      
+view_names: ["S2", "S2SCL", "weather"]
+
+architecture:
+  encoders: 
+    model_type: gru
+    n_layers: 2
+    layer_size: 128
+    dropout: 0.2
+    batchnorm: False
+  predictive_model:
+    n_layers: 1
+    layer_size: 128
+    dropout: 0.2
+    batchnorm: True

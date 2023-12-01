@@ -1,0 +1,5 @@
+output_dir_folder: ./out/
+input_dir_folder: ./data/
+
+#data_name: lfmc
+data_name: yield_cereals

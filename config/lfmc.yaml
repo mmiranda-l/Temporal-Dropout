@@ -1,0 +1,41 @@
+output_dir_folder: ./out/
+input_dir_folder: ./data/
+identifier_method: StandardIF
+
+data_name: lfmc
+
+training: 
+  max_epochs: 1000
+  batch_size: 32
+  emb_dim: 128 
+  early_stop_args: 
+    min_delta: 0.5
+    mode: min
+    patience: 5
+    verbose: True
+
+experiment: 
+  runs: 1 #repetitions
+  kfolds: 10
+  mlflow_runs_exp: True 
+  preprocess: 
+    fillnan: False
+    flatten: False
+    form: zscore
+    input_views: ["soil", "DEM", "S1", "S1Ind", "S2", "S2Ind"] #inputs to normalize
+      
+      
+view_names: ["soil","DEM","LIDAR", "landcover", "S1","S1Ind", "S2","S2Ind"]
+
+architecture:
+  encoders: 
+    model_type: gru
+    n_layers: 2
+    layer_size: 128
+    dropout: 0.2
+    batchnorm: False
+  predictive_model:
+    n_layers: 1
+    layer_size: 128
+    dropout: 0.2
+    batchnorm: True
