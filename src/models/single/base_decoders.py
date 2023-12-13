@@ -19,35 +19,30 @@ class Generic_Decoder(Base_Decoder):
         self,
         decoder: nn.Module,
         out_dims: int,
-        use_norm: bool = False,
         **kwargs,
     ):
         super(Generic_Decoder, self).__init__()
-        #self.return_all = False
         self.pre_decoder = decoder
 
         #build decoder head
         self.out_dims = out_dims
-        self.use_norm = use_norm
         self.linear_layer = nn.Linear(self.pre_decoder.get_output_size(), self.out_dims)
         
-    def activate_normalize_output(self):
-        self.use_norm = True
-
     def forward(self, x):
-        out_forward = self.pre_decoder(x) #should return a dictionary with output data {"rep": tensor}, or a single tensor
-        if type(out_forward) != dict:
-            out_forward = {"rep": out_forward}
-
-        return_dic = {"rep": self.linear_layer(out_forward["rep"])}
-        return return_dic["rep"] #single tensor output
-
+        if type(x) == dict:
+            out_forward = self.pre_decoder(x["rep"])
+        else:
+            out_forward = self.pre_decoder(x) 
+        
+        if type(out_forward) == dict:
+            final_rep = self.linear_layer(out_forward["rep"])
+        else:
+            final_rep = self.linear_layer(out_forward)
+            out_forward = {} #for returning 
+        return {
+            "prediction": final_rep, 
+            **out_forward 
+            }
+        
     def get_output_size(self):
         return self.out_dims
-
-    def update_first_layer(self, input_features):
-        if hasattr(self.pre_decoder, "layers"):
-            original_out_first = self.pre_decoder.layers[0][0].out_features
-            self.pre_decoder.layers[0][0] = torch.nn.Linear(in_features=input_features, out_features=original_out_first)
-        else:
-            raise Exception(f"Trying to update first layer of decoder model but no *layers* were found in model {self.pre_decoder}")

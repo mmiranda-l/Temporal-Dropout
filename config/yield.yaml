@@ -36,6 +36,9 @@ architecture:
     layer_size: 128
     dropout: 0.2
     batchnorm: False
+    temp_dropout: 0.1
+    temp_dropout_args:
+      replace_value: 0.0
   predictive_model:
     n_layers: 1
     layer_size: 128

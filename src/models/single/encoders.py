@@ -2,9 +2,7 @@ import torch
 from torch import nn
 
 from .base_encoders import Base_Encoder
-from .temporal_pool import TemporalAttentionPool
 
-#from https://github.com/jameschapman19/cca_zoo
 class MLP(Base_Encoder):
     def __init__(
         self,
@@ -82,7 +80,6 @@ class RNNet(Base_Encoder):
                 bidirectional=self.bidirectional)
 
         self.fc = torch.nn.Sequential(
-            TemporalAttentionPool(self.layer_size, "key") if self.temporal_pool else nn.Identity(),
             nn.BatchNorm1d(self.layer_size) if self.batchnorm else nn.Identity(),
         )
 
@@ -98,8 +95,7 @@ class RNNet(Base_Encoder):
         #     masks = (lengths-1).view(-1, 1, 1).expand(-1, seq_unpacked.size(1), seq_unpacked.size(2)).to(seq_unpacked.device).type(torch.int64)
         #     rnn_out = seq_unpacked.gather(0, masks)
 
-        if not self.temporal_pool:
-            rnn_out = rnn_out[:, -1] # only consider output of last time step-- what about attention-aggregation
+        rnn_out = rnn_out[:, -1] # only consider output of last time step-- what about attention-aggregation
         return {"rep": self.fc(rnn_out)}
 
     def get_output_size(self):

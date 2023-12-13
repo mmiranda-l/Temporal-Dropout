@@ -62,7 +62,7 @@ class ModelFusion(_BaseViewsLightning):
         out_z_e = self.fusion_module(list(out_zs_views["views:rep"].values())) #carefully, always forward a list
         
         out_y = self.prediction_head(out_z_e["joint_rep"])
-        return {"prediction": out_y }
+        return {"prediction": out_y.pop("prediction"), **out_y, **out_z_e, **out_zs_views }
             
     def prepare_batch(self, batch: dict) -> list:
         views_data, views_target = batch["views"], batch["target"]
@@ -88,7 +88,7 @@ class ModelFusion(_BaseViewsLightning):
         views_dict, views_target = self.prepare_batch(batch)
         out_dic = self(views_dict) 
 
-        return {"objective": self.criteria(out_dic["prediction"], views_target)}
+        return { "objective": self.criteria(out_dic["prediction"], views_target) }
 
     def transform(self,
             loader: torch.utils.data.DataLoader,
