@@ -18,7 +18,7 @@ brief data description
 ## PM2.5 Estimation (PM25)
 brief data description
 
-* Data source: [https://www.research-collection.ethz.ch/handle/20.500.11850/581023](https://doi.org/10.24432/C52K58)
+* Data source: [[https://www.research-collection.ethz.ch/handle/20.500.11850/581023](https://archive.ics.uci.edu/dataset/394/pm2+5+data+of+five+chinese+cities)](https://doi.org/10.24432/C52K58)
 * Reference: Chen,Song. (2017). PM2.5 Data of Five Chinese Cities. UCI Machine Learning Repository. [10.24432/C52K58](https://doi.org/10.24432/C52K58).
 
 ## Execution example
