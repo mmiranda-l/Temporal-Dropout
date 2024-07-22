@@ -1,8 +1,10 @@
 import torch
 from torch import nn
 
-from .base_encoders import Base_Encoder
-
+from src.models.single.base_encoders import Base_Encoder, Generic_Encoder
+from src.layers.dropconnect import WeightDropLinear, WeightDropGRU, WeightDropLSTM
+from src.layers.concrete_temporal_dropout import ConcreteTemporalDropout
+from src.layers.temporal_dropout import TemporalDropout
 class MLP(Base_Encoder):
     def __init__(
         self,
@@ -11,9 +13,11 @@ class MLP(Base_Encoder):
         activation=nn.ReLU, #LeakyReLU, GELU or nn.Tanh()
         dropout=0,
         batchnorm: bool=False,
+        approx_type: str=None,
         **kwargs,
     ):
         super(MLP, self).__init__()
+        approx_type = approx_type
         if layer_sizes is None:
             layer_sizes = (128,)
         layer_sizes = (feature_size,) + layer_sizes
@@ -23,7 +27,7 @@ class MLP(Base_Encoder):
         for l_id in range(len(layer_sizes) - 1):
             layers.append(
                 torch.nn.Sequential(
-                    torch.nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]),
+                    torch.nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]) if approx_type != "dropconnect" else WeightDropLinear(layer_sizes[l_id], layer_sizes[l_id + 1]),
                     activation(),
                     nn.BatchNorm1d(layer_sizes[l_id+1], affine=True) if batchnorm else nn.Identity(),
                     nn.Dropout(p=dropout) if dropout!=0 else nn.Identity(),
@@ -62,7 +66,7 @@ class RNNet(Base_Encoder):
         self.temporal_pool = temporal_pool
         self.pack_seq = pack_seq
 
-        if self.unit_type == "gru":
+        if self.unit_type in "gru":
             rnn_type_class = torch.nn.GRU
         elif self.unit_type == "lstm":
             rnn_type_class = torch.nn.LSTM
@@ -83,6 +87,7 @@ class RNNet(Base_Encoder):
             nn.BatchNorm1d(self.layer_size) if self.batchnorm else nn.Identity(),
         )
 
+
     def forward(self, x):
         # if self.pack_seq:
         #     lengths = torch.Tensor([ (torch.isfinite( v ).sum(axis=-1)!=0).sum() for v in x]).cpu() 
@@ -100,3 +105,79 @@ class RNNet(Base_Encoder):
 
     def get_output_size(self):
         return self.layer_size
+
+class BayesianEncoders(Base_Encoder):
+    def __init__(self, 
+        feature_size: int,
+        layer_size: int = 128,
+        dropout: float =0.3,
+        num_layers: int = 2,
+        bidirectional: bool = False,
+        network_type: str="lstm",
+        approx_type: str="dropout",
+        batchnorm: bool = False,
+        weight_regularizer: float=1e-4,
+        dropout_regularizer: float=2e-4, 
+        concrete_td: bool= True,
+        **kwargs,
+                 ) -> None:
+        super(BayesianEncoders, self).__init__()
+
+        self.approx_type = approx_type.lower()
+        self.network_type = network_type.lower()
+        self.feature_size = feature_size
+        self.layer_size = layer_size
+        self.num_layers = num_layers
+        self.dropout = dropout
+        self.bidirectional = bidirectional
+        self.batchnorm = batchnorm
+
+        if self.approx_type == "dropout" and self.network_type == "gru":
+            rnn_type_class = torch.nn.GRU
+        elif self.approx_type == "dropout" and self.network_type == "lstm":
+            rnn_type_class = torch.nn.LSTM
+        elif self.approx_type == "dropconnect" and self.network_type == "lstm":
+            rnn_type_class = WeightDropLSTM
+        elif self.approx_type == "dropconnect" and self.network_type == "gru":
+            rnn_type_class = WeightDropGRU
+
+        
+        #self.concrete_td = ConcreteTemporalDropout(weight_regularizer=weight_regularizer, dropout_regularizer=dropout_regularizer) if concrete_td else nn.Identity()
+
+        self.rnn = rnn_type_class(
+            input_size=self.feature_size,
+            hidden_size=self.layer_size,
+            num_layers=self.num_layers,
+            batch_first=True,
+            dropout=self.dropout,
+            bidirectional=self.bidirectional
+        )
+        self.fc = torch.nn.Sequential(
+            nn.BatchNorm1d(self.layer_size) if self.batchnorm else nn.Identity(),
+        )
+    
+    def forward(self, x):
+
+       # x, _ = self.concrete_td(x)
+        rnn_out, states = self.rnn(x)
+        rnn_out = rnn_out[:, -1] # only consider output of last time step-- what about attention-aggregation
+        return {"rep": self.fc(rnn_out)}
+
+    def get_output_size(self):
+        return self.layer_size
+    
+
+    
+
+if __name__ == "__main__":
+    b = BayesianEncoders(
+        feature_size=2,
+        network_type="lstm",
+        approx_type="dropout", 
+
+    )
+    print(b)
+    t = torch.ones(5, 3, 2)
+    print(t.shape)
+    out = b(t)
+    print(out["rep"].shape)

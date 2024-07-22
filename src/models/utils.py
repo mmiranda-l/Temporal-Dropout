@@ -2,6 +2,7 @@ import numpy as np
 import itertools
 import torch
 from typing import List, Union, Dict
+from src.metrics.loss import NLL
 
 class Lambda(torch.nn.Module):
     "An easy way to create a pytorch layer for a simple `func`."
@@ -18,12 +19,14 @@ def get_loss_by_name(name, **loss_args):
         return torch.nn.CrossEntropyLoss(reduction="mean", **loss_args)
     elif ("bin" in name and "entr" in name) or name=="bce":
         return torch.nn.KLDivLoss(reduction="mean")
-    elif name == "kl" or name=="divergence": 
+    elif name == "kl" or name =="divergence": 
         return torch.nn.KLDivLoss(reduction="mean")
-    elif name == "mse" or name =="l2":
+    elif name == "mse" or name == "l2":
         return torch.nn.MSELoss(reduction='mean')
-    elif name == "mae" or name =="l1":
+    elif name == "mae" or name == "l1":
         return torch.nn.L1Loss(reduction='mean')
+    elif name == "nll":
+        return NLL()
 
 def detach_all(z):
     if isinstance(z, dict):
@@ -56,6 +59,14 @@ def object_to_list(z):
         return [ [z_i] for z_i in z]
     else:
         return [z]
+
+def unpack(z_list):
+    prediction = z_list["prediction"]
+    if prediction.ndim == 3:
+        z_list["prediction"] = prediction.mean(axis=-1)
+        z_list["variance"] = z_list["variance"].mean(axis=-1)
+    return z_list
+
 
 def stack_all(z_list, data_type = "numpy"):
     if isinstance(z_list, dict):

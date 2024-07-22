@@ -2,7 +2,8 @@ import torch
 from torch import nn
 import abc
 
-from .temporal_dropout import TemporalDropout
+from src.layers.temporal_dropout import TemporalDropout
+from src.layers.concrete_temporal_dropout import ConcreteTemporalDropout
 
 class Base_Encoder(abc.ABC, nn.Module):
     """
@@ -24,17 +25,23 @@ class Generic_Encoder(Base_Encoder):
         encoder: nn.Module,
         latent_dims: int,
         temp_dropout: float = 0.0, 
+        concrete_td= True,
         temp_dropout_args : dict = {},
+        weight_regularizer: float=1e-4,
+        dropout_regularizer: float=2e-4,
         **kwargs,
     ):
         super(Generic_Encoder, self).__init__()
         self.pre_encoder = encoder
-
+        self.concrete_td = concrete_td
         #build encoder head
         self.latent_dims = latent_dims
         self.linear_layer = nn.Linear(self.pre_encoder.get_output_size(), self.latent_dims) 
+        if concrete_td: 
+            self.tempdrop_layer = ConcreteTemporalDropout(weight_regularizer=weight_regularizer, dropout_regularizer=dropout_regularizer)
         
-        self.tempdrop_layer = TemporalDropout(p=temp_dropout,
+        else:
+            self.tempdrop_layer = TemporalDropout(p=temp_dropout,
                                            **temp_dropout_args) if temp_dropout != 0 else nn.Identity()
 
     def forward(self, x):
