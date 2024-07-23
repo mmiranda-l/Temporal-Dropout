@@ -43,35 +43,53 @@ def evaluate(
 
     df_runs = []
     df_runs_diss = []
+    
+    y_true_concatenated = [] #to create 
+    y_pred_concatenated = []
     for r in range(R):
         y_true, y_pred = gt_mask(data_ground_truth, indexs_p_run[r]), preds_p_run[r]
         y_true = np.squeeze(y_true)
-        y_pred_cont = np.squeeze(y_pred)
+        y_pred = np.squeeze(y_pred)
+        y_true_concatenated.append(y_true)#to create plots
+
+        if y_pred.shape[1] > 1 or len(y_pred.shape)==2: #calculate mean of predictions for evaluation
+            y_pred_mean = y_pred.mean(axis=-1)
+        y_pred_concatenated.append(y_pred_mean)#to create plots
 
         d_me = RegressionMetrics()
-        dic_res = d_me(y_pred_cont, y_true)
+        dic_res = d_me(y_pred_mean, y_true)
         df_res = pd.DataFrame(dic_res, index=["test"])
         df_runs.append(df_res)
 
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,3), squeeze=False)
-        plot_dist_bin(ax[0,0], y_pred_cont, y_true, f"(run-{r})")
-        save_results(f"{dir_folder}/plots/{ind_save}/preds_r{r:02d}", plt)
-        plt.close()
-        
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(7,5), squeeze=False)
-        plot_true_vs_pred(ax[0,0], y_pred_cont, y_true, f"(run-{r})")
-        save_results(f"{dir_folder}/plots/{ind_save}/preds_vs_ground_r{r:02d}", plt)
-        plt.close()
+        #For MIRO: you can add here more evaluations based on y_pred (that will be (n_samples, n_predictions) )
 
     df_concat = pd.concat(df_runs).groupby(level=0)
     df_mean = df_concat.mean()
     df_std = df_concat.std()
 
+    print(df_concat)
+    all_df = pd.concat(df_runs)
+    all_df.index = [f"fold-{v:02d}" for v in range(R)]
+    save_results(f"{dir_folder}/plots/{ind_save}/results_all", all_df) #store per group
     save_results(f"{dir_folder}/plots/{ind_save}/preds_mean", df_mean)
     save_results(f"{dir_folder}/plots/{ind_save}/preds_std", df_std)
     print(f"################ Showing the {ind_save} ################")
     print(df_mean.round(4).to_markdown())
     print(df_std.round(4).to_markdown())
+
+    #overall plots (across al folds)
+    y_pred_concatenated = np.concatenate(y_pred_concatenated,axis=0)
+    y_true_concatenated = np.concatenate(y_true_concatenated,axis=0)
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,3), squeeze=False)
+    plot_dist_bin(ax[0,0], y_pred_concatenated, y_true_concatenated)
+    save_results(f"{dir_folder}/plots/{ind_save}/prediction_histogram", plt)
+    
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(7,5), squeeze=False)
+    plot_true_vs_pred(ax[0,0], y_pred_concatenated, y_true_concatenated)
+    save_results(f"{dir_folder}/plots/{ind_save}/predictions_vs_groundtruth", plt)
+    plt.close("all")
+    plt.clf()
 
     return df_mean,df_std
 

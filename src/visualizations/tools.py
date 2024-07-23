@@ -24,7 +24,7 @@ def plot_dist_bin(ax, y_pred_cont, y_true, add_title=""):
 def plot_true_vs_pred(ax, y_pred_cont, y_true, add_title=""):
     y = np.arange(np.min(y_true), np.max(y_true))
     ax.plot(y, y, "-", color="red")
-    ax.scatter(y_true, y_pred_cont, marker="o", edgecolors='black', s=30)
+    ax.scatter(y_true, y_pred_cont, marker="o", edgecolors='black', s=30, rasterized=True)
     ax.set_title(f"Prediction vs ground truth {add_title}")
     ax.set_xlabel("Ground truth")
     ax.set_ylabel("Prediction")
