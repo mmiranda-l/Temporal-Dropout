@@ -4,16 +4,22 @@ Temporal dropout applied with a Concrete distribution
 ## Live Fuel Moisture Content (LFMC)
 brief data description
 
-* Data source: https://github.com/kkraoj/lfmc_from_sar
+* Data source: [https://github.com/kkraoj/lfmc_from_sar](https://github.com/kkraoj/lfmc_from_sar)
 * Reference: Rao, Krishna, et al. *SAR-enhanced mapping of live fuel moisture content.* Remote Sensing of Environment 245 (2020): [111797](https://www.sciencedirect.com/science/article/pii/S003442572030167X).
 
 
 ## Pixel-Wise Yield Mapping (PWYM)
 brief data description
 
-* Data source: https://www.research-collection.ethz.ch/handle/20.500.11850/581023
+* Data source: [https://www.research-collection.ethz.ch/handle/20.500.11850/581023](https://www.research-collection.ethz.ch/handle/20.500.11850/581023)
 * Reference: Perich, Gregor, et al. *Pixel-based yield mapping and prediction from Sentinel-2 using spectral indices and neural networks.* Field Crops Research 292 (2023): [108824](https://www.sciencedirect.com/science/article/pii/S0378429023000175?via%3Dihub#da0005).
 
+
+## PM2.5 Estimation (PM25)
+brief data description
+
+* Data source: [https://archive.ics.uci.edu/dataset/394/pm2+5+data+of+five+chinese+cities](https://doi.org/10.24432/C52K58)
+* Reference: Chen,Song. (2017). PM2.5 Data of Five Chinese Cities. UCI Machine Learning Repository. [10.24432/C52K58](https://doi.org/10.24432/C52K58).
 
 ## Execution example
 * For training run
