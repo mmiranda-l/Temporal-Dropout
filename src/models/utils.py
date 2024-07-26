@@ -67,6 +67,14 @@ def unpack(z_list):
         z_list["variance"] = z_list["variance"].mean(axis=-1)
     return z_list
 
+def squeeze(z_list):
+    prediction = z_list["prediction"]
+    if prediction.ndim == 3:
+        z_list["prediction"] = prediction.squeeze(1)
+        z_list["variance"] = z_list["variance"].squeeze(1)
+
+    return z_list
+
 
 def stack_all(z_list, data_type = "numpy"):
     if isinstance(z_list, dict):

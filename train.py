@@ -79,8 +79,9 @@ def main_run(config_file):
 
             ### STORE predictions
             pred_time_Start = time.time()
-            outputs_tr = method.transform(_to_loader(train_data, batch_size=BS, train=False))    
+            outputs_tr  = method.transform(_to_loader(train_data, batch_size=BS, train=False))    
             outputs_te = method.transform(_to_loader(val_data, batch_size=BS, train=False))
+
             metadata_r["full_prediction_time"].append(time.time()-pred_time_Start)
             
             data_save_tr = DataViews([outputs_tr["prediction"]], identifiers=train_data["identifiers"], view_names=[f"out_run-{r:02d}_fold-{k:02d}"])
@@ -92,6 +93,17 @@ def main_run(config_file):
             data_save_te.save(f"{output_dir_folder}/pred/{data_name}/test/{method_name}", ind_views=True,xarray=False)
             mlf_logger.experiment.log_artifact(run_id_mlflow, f"{output_dir_folder}/pred/{data_name}/test/{method_name}/out_run-{r:02d}_fold-{k:02d}.csv",
                                             artifact_path=f"preds/test")
+            if "variance" in list(outputs_tr.keys()):
+                data_save_tr = DataViews([outputs_tr["variance"]], identifiers=train_data["identifiers"], view_names=[f"out_run_variance-{r:02d}_fold-{k:02d}"])
+                data_save_tr.save(f"{output_dir_folder}/pred/{data_name}/train/{method_name}", ind_views=True,xarray=False)
+                mlf_logger.experiment.log_artifact(run_id_mlflow, f"{output_dir_folder}/pred/{data_name}/train/{method_name}/out_run_variance-{r:02d}_fold-{k:02d}.csv",
+                                                artifact_path="preds/train")
+                
+                data_save_te = DataViews([outputs_te["variance"]], identifiers=val_data["identifiers"], view_names=[f"out_run_variance-{r:02d}_fold-{k:02d}"])
+                data_save_te.save(f"{output_dir_folder}/pred/{data_name}/test/{method_name}", ind_views=True,xarray=False)
+                mlf_logger.experiment.log_artifact(run_id_mlflow, f"{output_dir_folder}/pred/{data_name}/test/{method_name}/out_run_variance-{r:02d}_fold-{k:02d}.csv",
+                                                artifact_path=f"preds/test")
+                
             
             print(f"Fold {k+1}/{kfolds} of Run {r+1}/{runs} in {method_name} finished...")
     if type(run_id_mlflow) != type(None):

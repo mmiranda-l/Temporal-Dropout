@@ -53,15 +53,18 @@ def InputFusion_train(train_data: dict, val_data = None,
     batch_size = training["batch_size"]
     early_stop_args = training["early_stop_args"]
     loss_args = training["loss_args"]
+    uncertainy_estimation = training.get("uncertainty_estimation", False)
+    approx_type = training.get("approx_type", None)
+    uq = training.get("uq", True) #uncertainty quantification
     folder_c = output_dir_folder+"/run-saves"
     n_labels = 1
 
     #MODEL DEFINITION
     feats_dims = [v.shape[-1] for v in train_data["views"]]
-    args_model = {"input_dim_to_stack": feats_dims, "loss_args": loss_args}
+    args_model = {"input_dim_to_stack": feats_dims, "loss_args": loss_args, "uq":uq}
 
-    encoder_model = create_model(np.sum(feats_dims), emb_dim, **architecture["encoders"])
-    predictive_model = create_model(emb_dim, n_labels, **architecture["predictive_model"], encoder=False)  #default is mlp
+    encoder_model = create_model(np.sum(feats_dims), emb_dim, uncertainty_estimation=uncertainy_estimation, approx_type=approx_type, **architecture["encoders"])
+    predictive_model = create_model(emb_dim, n_labels, uncertainty_estimation=uncertainy_estimation, approx_type=approx_type,  **architecture["predictive_model"], encoder=False)  #default is mlp
     full_model = torch.nn.Sequential(encoder_model, predictive_model)
     #FUSION DEFINITION
     model = InputFusion(predictive_model=full_model, view_names=train_data["view_names"], **args_model)
@@ -74,7 +77,9 @@ def InputFusion_train(train_data: dict, val_data = None,
         monitor_name = "train_objective"
     train_dataloader = _to_loader(train_data, batch_size=batch_size)
     extra_objects = prepare_loggers(data_name, method_name, run_id, fold_id, folder_c, model.hparams_initial, run_id_mlflow, monitor_name, **early_stop_args)
-    trainer = pl.Trainer(max_epochs=max_epochs, accelerator="gpu", devices = 1,
+    device = "gpu" if torch.cuda.is_available() else "cpu"
+    trainer = pl.Trainer(max_epochs=max_epochs, 
+                         accelerator=device, devices = 1,
                          callbacks=extra_objects["callbacks"],logger=extra_objects["loggers"])
     trainer.fit(model, train_dataloader, val_dataloaders=(val_dataloader if type(val_data) != type(None) else None))
 

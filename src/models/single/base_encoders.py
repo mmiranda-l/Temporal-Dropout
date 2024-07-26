@@ -25,7 +25,7 @@ class Generic_Encoder(Base_Encoder):
         encoder: nn.Module,
         latent_dims: int,
         temp_dropout: float = 0.0, 
-        concrete_td= True,
+        concrete_td=False,
         temp_dropout_args : dict = {},
         weight_regularizer: float=1e-4,
         dropout_regularizer: float=2e-4,
@@ -48,6 +48,7 @@ class Generic_Encoder(Base_Encoder):
         x = self.tempdrop_layer(x) #apply temporal dropout if available
         
         out_forward = self.pre_encoder(x) 
+
         if type(out_forward) == dict:
             final_rep = self.linear_layer(out_forward["rep"])
         else:

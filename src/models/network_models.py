@@ -5,7 +5,7 @@ from .single.encoders_sota import LTAE, TemporalAttentionEncoder, TempCNN
 from .single.base_encoders import Generic_Encoder
 from .single.base_decoders import Generic_Decoder, Generic_Bayesian_Decoder
 
-def create_model(input_dims, emb_dims: int, model_type: str = "mlp", n_layers: int = 2, batchnorm=False, dropout=0, use_norm_emb=False, encoder=True, **args):
+def create_model(input_dims, emb_dims: int, model_type: str = "mlp", n_layers: int = 2, batchnorm=False, dropout=0, use_norm_emb=False, encoder=True, uncertainty_estimation=True, **args):
     model_type = model_type.lower()
     args = copy.deepcopy(args)
 
@@ -15,6 +15,7 @@ def create_model(input_dims, emb_dims: int, model_type: str = "mlp", n_layers: i
     args["dropout"] = dropout
     approx_type = args.get("approx_type", "dropout") #check for probabilistic methods
     mc_samples = args.get("mc_samples", 20)
+    #if not uncertainty_estimation: 
     if model_type == 'linear':
         args["layer_sizes"] = tuple([])
         sub_model =  MLP(**args)
@@ -63,7 +64,6 @@ def create_model(input_dims, emb_dims: int, model_type: str = "mlp", n_layers: i
 
     else:
         raise ValueError(f'Invalid value for model_type: {model_type}. Valid values: ["mlp","cnn","rnn","gru","lstm"]')
-    print(args, "ARGS")
     if encoder:
         return Generic_Encoder(encoder=sub_model, latent_dims=emb_dims, use_norm= use_norm_emb, **args)
     elif not encoder and approx_type:

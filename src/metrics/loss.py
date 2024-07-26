@@ -17,22 +17,15 @@ class NLL(nn.Module):
             prediction: dict
             target: tensor
         """
-        #assert prediction.ndim >= 3 and target.dim() == 2 # if b x mc x p, b x 1
         loss = 0
-        #for mu, var in prediction.permute(-1, 0, 1, 2): # nbr, (mu, logvar), batchsize 
-        #for pre in prediction.permute(-1, 0, 1): 
-            #loss += self._nll(mu, var, target, epsilon)
-            #loss += self.mse(pre, target)
-        mc_samples = prediction.shape[-1]
-        for i in range(mc_samples):
-            loss += self._nll(prediction[:,:,i], variance[:,:,i], target)
-        return loss / mc_samples
-    
-    
+        prediction = prediction.mean(axis=-1)
+        variance = variance.mean(axis=-1)
+        loss = self._nll(mu=prediction, var=variance, target=target)
+        return loss.mean()
     
     def _nll(self, mu, var, target, epsilon=1e-8):
         sigma = torch.exp(var)   
-        return 0.5 * torch.mean(torch.log(sigma + epsilon) + torch.square(target - mu) / (sigma + epsilon))
+        return 0.5 * torch.mean(torch.log(sigma + epsilon) + (torch.square(target - mu) / (sigma + epsilon)))
             
 
 if __name__ =="__main__":

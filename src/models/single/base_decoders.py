@@ -53,7 +53,7 @@ class Generic_Bayesian_Decoder(Generic_Decoder):
         self.linear_var = nn.Linear(self.pre_decoder.get_output_size(), self.out_dims) # second prediction head to model variance
         self.mc_samples = mc_samples
 
-    def _forward(self, x):
+    def forward(self, x):
         if type(x) == dict:
             out_forward = self.pre_decoder(x["rep"])
         else:
@@ -65,20 +65,7 @@ class Generic_Bayesian_Decoder(Generic_Decoder):
             final_rep = self.linear_layer(out_forward)
             final_var = self.linear_var(out_forward)
             out_forward = {} #for returning 
-        return final_rep, final_var
-    
-    def forward(self, x, sample_nbr=3):
-        if self.training:
-            nbr = sample_nbr # only few samples in training
-        else: nbr = self.mc_samples
-        preds = []
-        vars = []
-        for _ in range(nbr):
-            pred, var = self._forward(x)
-            preds.append(pred)
-            vars.append(var)
-        return {"prediction": torch.stack(preds, axis=-1), "variance": torch.stack(vars, axis=-1)}
-
+        return {"prediction": final_rep, "variance": final_var}
         
     def get_output_size(self):
         return self.out_dims

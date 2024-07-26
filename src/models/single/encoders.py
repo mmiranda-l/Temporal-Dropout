@@ -142,7 +142,6 @@ class BayesianEncoders(Base_Encoder):
             rnn_type_class = WeightDropGRU
 
         
-        #self.concrete_td = ConcreteTemporalDropout(weight_regularizer=weight_regularizer, dropout_regularizer=dropout_regularizer) if concrete_td else nn.Identity()
 
         self.rnn = rnn_type_class(
             input_size=self.feature_size,
@@ -157,8 +156,6 @@ class BayesianEncoders(Base_Encoder):
         )
     
     def forward(self, x):
-
-       # x, _ = self.concrete_td(x)
         rnn_out, states = self.rnn(x)
         rnn_out = rnn_out[:, -1] # only consider output of last time step-- what about attention-aggregation
         return {"rep": self.fc(rnn_out)}
