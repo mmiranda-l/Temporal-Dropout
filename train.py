@@ -30,7 +30,6 @@ def main_run(config_file):
         config_file["training"]["loss_args"] = {"name": "mse"}
     
     data_views_all = load_structure(f"{input_dir_folder}/{data_name}")
-    indexs_ = data_views_all.get_all_identifiers() 
     if "input_views" not in preprocess_args:
         preprocess_args["input_views"] = view_names
     preprocess_views(data_views_all, **preprocess_args)
@@ -38,6 +37,7 @@ def main_run(config_file):
     run_id_mlflow = None 
     metadata_r = {"epoch_runs":[], "full_prediction_time":[], "training_time":[], "best_score":[] }
     for r in range(runs): #RUN 
+        indexs_ = data_views_all.get_all_identifiers() 
         ### Create Index for validation/testing
         if config_file["experiment"].get("group"): #stratified cross-validation
             name_group = config_file["experiment"].get("group")
