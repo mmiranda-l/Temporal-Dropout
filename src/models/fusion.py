@@ -11,7 +11,8 @@ class InputFusion(ModelFusion):
                  loss_args: dict = {},
                  view_names: List[str] = [],
                  input_dim_to_stack: Union[List[int], Dict[str,int]] = 0,
-                 uq: bool=True
+                 uq: bool=True,
+                 len_sequence=1,
                  ):
         if len(loss_args) == 0:
             loss_args = {"name": "mse"}
@@ -25,4 +26,4 @@ class InputFusion(ModelFusion):
             aux.get_output_size = lambda : v
             fake_view_encoders.append( aux)
         super(InputFusion, self).__init__(fake_view_encoders, fusion_module, predictive_model,
-            loss_args=loss_args, view_names=view_names, uq=uq)
+            loss_args=loss_args, view_names=view_names, uq=uq, len_sequence=len_sequence)

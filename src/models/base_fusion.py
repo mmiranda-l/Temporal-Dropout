@@ -24,7 +24,8 @@ class ModelFusion(_BaseViewsLightning):
                  loss_args: dict ={},
                  view_names: List[str] = [], #this is only used if view_encoders are a list
                  mc_samples: int=20,
-                 uq: bool=True
+                 uq: bool=True,
+                 len_sequence=1
                  ):
         super(ModelFusion, self).__init__()
 
@@ -46,7 +47,8 @@ class ModelFusion(_BaseViewsLightning):
         self.mc_samples = mc_samples
         self.criteria = loss_args["function"] if "function" in loss_args else get_loss_by_name(**self.hparams_initial.loss_args)
         self.uq = uq # uncertainty quantification 
-
+        self.len_sequence = len_sequence
+        
     def forward_encoders(self,
             views: Dict[str, torch.Tensor],
             ) -> Dict[str, torch.Tensor]:
