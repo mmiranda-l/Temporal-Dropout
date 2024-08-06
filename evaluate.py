@@ -65,10 +65,10 @@ def evaluate(
             y_pred_mean = y_pred.mean(axis=-1)
             
             y_eps = y_pred.std(axis=-1)
-            y_alea = np.sqrt(np.exp(var_p_run_te[r])).mean(axis=-1) 
+            #y_alea = np.sqrt(np.exp(var_p_run_te[r])).mean(axis=-1) 
             
             y_eps_concatenated.append(y_eps)
-            y_alea_concatenated.append(y_alea)
+            #y_alea_concatenated.append(y_alea)
         
         y_pred_concatenated.append(y_pred_mean)#to create plots
 
@@ -98,8 +98,10 @@ def evaluate(
     y_pred_concatenated = np.concatenate(y_pred_concatenated,axis=0)
     y_true_concatenated = np.concatenate(y_true_concatenated,axis=0)
     
-    if y_eps_concatenated != [] and y_alea_concatenated != []:
+    if y_eps_concatenated != []:
         y_eps_concatenated = np.concatenate(y_eps_concatenated, axis=0)
+    
+    if y_alea_concatenated != []:
         y_alea_concatenated = np.concatenate(y_alea_concatenated, axis=0)
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,3), squeeze=False)
@@ -116,7 +118,7 @@ def evaluate(
     sorted_preds = y_pred_concatenated[index_sorted_preds]
     sorted_y_true = y_true_concatenated[index_sorted_preds]
     sorted_eps = y_eps_concatenated[index_sorted_preds]
-    sorted_alea = y_alea_concatenated[index_sorted_preds]
+    #sorted_alea = y_alea_concatenated[index_sorted_preds]
     
 
 
@@ -124,14 +126,14 @@ def evaluate(
     #ax[0,0].plot(np.arange(0, len(y_eps_concatenated)), sorted_preds - sorted_std,c="b", alpha=.8, label="Epistemic Uncertainty")
     #ax[0,0].plot(np.arange(0, len(sorted_y_true)), sorted_y_true, label="Target", c="blue")
 
-    ax[0,0].fill_between(np.arange(0, len(y_alea_concatenated)), sorted_preds + (sorted_eps + sorted_alea), sorted_preds - (sorted_eps + sorted_alea), color='grey', alpha=.5, label="Epistemic + Aleatoric")
+    # ax[0,0].fill_between(np.arange(0, len(y_alea_concatenated)), sorted_preds + (sorted_eps + sorted_alea), sorted_preds - (sorted_eps + sorted_alea), color='grey', alpha=.5, label="Epistemic + Aleatoric")
 
-    ax[0,0].fill_between(np.arange(0, len(y_eps_concatenated)), sorted_preds + sorted_eps, sorted_preds - sorted_eps, color='blue', alpha=.5, label="Epistemic")
-    ax[0,0].plot(np.arange(0, len(y_pred_concatenated)), sorted_preds, label="Mean Prediction", c="red")
-    #ax[0,0].set_ylim(0)
-    plt.xlabel("Sample")
-    plt.ylabel("Prediction")    
-    plt.legend(fontsize=10)
+    # ax[0,0].fill_between(np.arange(0, len(y_eps_concatenated)), sorted_preds + sorted_eps, sorted_preds - sorted_eps, color='blue', alpha=.5, label="Epistemic")
+    # ax[0,0].plot(np.arange(0, len(y_pred_concatenated)), sorted_preds, label="Mean Prediction", c="red")
+    # #ax[0,0].set_ylim(0)
+    # plt.xlabel("Sample")
+    # plt.ylabel("Prediction")    
+    # plt.legend(fontsize=10)
 
 
 

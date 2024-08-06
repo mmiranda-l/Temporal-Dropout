@@ -53,18 +53,18 @@ def InputFusion_train(train_data: dict, val_data = None,
     batch_size = training["batch_size"]
     early_stop_args = training["early_stop_args"]
     loss_args = training["loss_args"]
-    uncertainy_estimation = training.get("uncertainty_estimation", False)
     approx_type = training.get("approx_type", None)
     uq = training.get("uq", True) #uncertainty quantification
+    len_sequence = training.get("len_sequence", 1)
     folder_c = output_dir_folder+"/run-saves"
     n_labels = 1
 
     #MODEL DEFINITION
     feats_dims = [v.shape[-1] for v in train_data["views"]]
-    args_model = {"input_dim_to_stack": feats_dims, "loss_args": loss_args, "uq":uq}
+    args_model = {"input_dim_to_stack": feats_dims, "loss_args": loss_args, "uq":uq, "len_sequence": len_sequence}
 
-    encoder_model = create_model(np.sum(feats_dims), emb_dim, uncertainty_estimation=uncertainy_estimation, approx_type=approx_type, **architecture["encoders"])
-    predictive_model = create_model(emb_dim, n_labels, uncertainty_estimation=uncertainy_estimation, approx_type=approx_type,  **architecture["predictive_model"], encoder=False)  #default is mlp
+    encoder_model = create_model(np.sum(feats_dims), emb_dim, approx_type=approx_type, len_sequence=len_sequence, **architecture["encoders"])
+    predictive_model = create_model(emb_dim, n_labels, approx_type=approx_type,  **architecture["predictive_model"], encoder=False)  #default is mlp
     full_model = torch.nn.Sequential(encoder_model, predictive_model)
     #FUSION DEFINITION
     model = InputFusion(predictive_model=full_model, view_names=train_data["view_names"], **args_model)
