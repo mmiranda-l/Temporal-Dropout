@@ -36,7 +36,7 @@ def main_run(config_file):
     
     run_id_mlflow = None 
     metadata_r = {"epoch_runs":[], "full_prediction_time":[], "training_time":[], "best_score":[] }
-    for r in range(runs): #RUN 
+    for r in range(runs): 
         indexs_ = data_views_all.get_all_identifiers() 
         ### Create Index for validation/testing
         if config_file["experiment"].get("group"): #stratified cross-validation
