@@ -1,0 +1,45 @@
+output_dir_folder: /home/mena/Documents/colaborations/Temporal-Dropout/out/
+input_dir_folder: /home/mena/OneDrive/Publications/data/pixel_all
+identifier_method: StandardIF
+
+data_name: lfmc_train_input
+
+training: 
+  max_epochs: 1000
+  batch_size: 32
+  emb_dim: 128 
+  early_stop_args: 
+    min_delta: 0.5
+    mode: min
+    patience: 5
+    verbose: True
+
+experiment: 
+  runs: 2 #repetitions
+  kfolds: 2
+  mlflow_runs_exp: True 
+  preprocess: 
+    fillnan: False
+    flatten: False
+    form: zscore
+    input_views: ["soil", "DEM", "S1", "S1Ind", "S2", "S2Ind"] #inputs to normalize
+      
+view_names: ["soil","DEM","LIDAR", "landcover", "S1","S1Ind", "S2","S2Ind"]
+
+architecture:
+
+  encoders: 
+    model_type: gru
+    n_layers: 2
+    layer_size: 128
+    dropout: 0.2
+    batchnorm: False
+    temp_dropout: 0.3
+    temp_dropout_args:
+      replace_value: 0.0
+
+  predictive_model:
+    n_layers: 1
+    layer_size: 128
+    dropout: 0.2
+    batchnorm: True

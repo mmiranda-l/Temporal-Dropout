@@ -103,7 +103,7 @@ class DataViews(object):
             if type(v) == list: #or type(v) == np.ndarray:
                 v = np.asarray(v)
             else:
-                v = np.asarray([v])
+                v = np.asarray([v.squeeze()])
             if ident not in self.identifiers_target:
                 self.identifiers_target[ident] = v
             else:
@@ -384,7 +384,6 @@ class DataViews(object):
                 self.train_mask_identifiers[v] = False
                 
     def apply_views(self, func):
-        #what about parallel?
         for view_name in self.view_names:
             if type(func) == dict:
                 if view_name in func:
@@ -458,14 +457,14 @@ class DataViews(object):
 
 def load_structure(name_path: str):
     ext = name_path.split(".")[-1]
-    if ("pkl" == ext): #or (not os.path.isfile(f"{name_path}.nc")):
+    if ("pkl" == ext): 
         sys.modules['repo.views_structure'] = sys.modules[__name__]
         sys.modules["repo"] = "."
         sys.modules['views_structure'] = sys.modules[__name__]
 
         with open(name_path,'rb') as file:
             return pickle.load(file)
-    else:  #default
+    else:  
         if "nc" != ext:
             name_path= name_path+'.nc'
         data  = xray.open_dataset(name_path, engine="h5netcdf")

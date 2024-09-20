@@ -24,8 +24,8 @@ class DataViews_torch(torch.utils.data.Dataset):
             self.view_names = list(views.keys())
             self.views = [views[v_name] for v_name in self.view_names]
         else:
-            self.views = views #already a list [view for view in views] #to copy them
-        self.views = list(self.views) #it work with lists
+            self.views = views 
+        self.views = list(self.views) 
 
         if len(self.view_names) == 0:
             self.view_names = [f"S{i}" for i in range(1,1+len(self.views))]
@@ -55,10 +55,9 @@ class DataViews_torch(torch.utils.data.Dataset):
             target = -1
         if self.view_first:
             views = {view_n: self.transform_type(view[index],"float32") for view, view_n in zip(self.views,self.view_names)}
-        else: #it require "view_names_data" array
+        else:
             views = {view_n: self.transform_type(view, "float32") for view, view_n in zip(self.views[index],self.view_names_data[index])}
         return {"views": views if not self.return_list else list(views.values()), "index": index, "target": target}
-                #"view_names":self.view_names} #however, model still work with list, by giving view_names as input
 
     def transform_type(self,x, dt):
         if type(x)==np.ndarray:
@@ -70,7 +69,7 @@ class DataViews_torch(torch.utils.data.Dataset):
         return torch.utils.data.DataLoader(
             self,
             batch_size=batch_size,
-            drop_last=False, #self.train,
+            drop_last=False,
             num_workers=0,
             shuffle=self.train,
             **kwargs
