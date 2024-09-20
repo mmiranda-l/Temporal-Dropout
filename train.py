@@ -9,10 +9,17 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import class_weight
 
+import seaborn as sns
+from matplotlib.lines import Line2D
+import matplotlib
+matplotlib.rc('font', **{"size":14})
+
 from src.training.utils import preprocess_views
 from src.training.learn_pipeline import InputFusion_train
 from src.datasets.views_structure import DataViews, load_structure
 from src.datasets.utils import _to_loader
+from evaluate import main_evaluation
+
 
 def main_run(config_file):
     start_time = time.time()
@@ -33,11 +40,11 @@ def main_run(config_file):
     if "input_views" not in preprocess_args:
         preprocess_args["input_views"] = view_names
     preprocess_views(data_views_all, **preprocess_args)
+    indexs_ = data_views_all.get_all_identifiers() 
     
     run_id_mlflow = None 
     metadata_r = {"epoch_runs":[], "full_prediction_time":[], "training_time":[], "best_score":[] }
     for r in range(runs): #RUN 
-        indexs_ = data_views_all.get_all_identifiers() 
         ### Create Index for validation/testing
         if config_file["experiment"].get("group"): #stratified cross-validation
             name_group = config_file["experiment"].get("group")
@@ -133,3 +140,5 @@ if __name__ == "__main__":
         config_file = yaml.load(fd, Loader=yaml.SafeLoader)
     
     main_run(config_file)
+    main_evaluation(config_file)
+

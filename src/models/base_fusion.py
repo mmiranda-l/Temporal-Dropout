@@ -10,6 +10,9 @@ from .utils import get_missviews_mask_i, possible_missing_mask
 from .core_fusion import _BaseViewsLightning
 from src.metrics.loss import NLL
 from src.models.single.base_decoders import Generic_Bayesian_Decoder
+from src.layers.temporal_dropout import TemporalDropout
+from src.layers.concrete_temporal_dropout import ConcreteTemporalDropout
+
 
 class ModelFusion(_BaseViewsLightning):
     #ONLY FOR POINT-PREDICTION
@@ -134,7 +137,7 @@ class ModelFusion(_BaseViewsLightning):
         device = ("cuda" if torch.cuda.is_available() else "cpu") if device == "" else device
         device_used = torch.device(device)
 
-        self.eval() #set batchnorm and dropout off
+        self._eval() #set batchnorm and dropout off
         self.to(device_used)
         with torch.no_grad():
             for batch_idx, batch in enumerate(loader):
@@ -153,17 +156,18 @@ class ModelFusion(_BaseViewsLightning):
         self.train()
         return stack_all(outputs) #stack with numpy in cpu
     
-    def eval(self):
+    def _eval(self):
         """
         Recursively sets only Batchnorm layers into eval mode to activate dropout and deactivate Batchnorm.
         """
         if not self.uq:
             return super().eval()
         def __eval(module):
-            if isinstance(module, (nn.modules.batchnorm.BatchNorm1d, nn.modules.batchnorm.BatchNorm2d, nn.modules.batchnorm.BatchNorm3d, nn.modules.LayerNorm)):
-                module.eval()
-            else:
+            #if isinstance(module, (nn.modules.batchnorm.BatchNorm1d, nn.modules.batchnorm.BatchNorm2d, nn.modules.batchnorm.BatchNorm3d, nn.modules.LayerNorm)):
+            if isinstance(module, (ConcreteTemporalDropout, TemporalDropout)):
                 module.train()
+            else:
+                module.eval()
             #if isinstance(module, (Generic_Bayesian_Decoder)): module.training = False #Ensure to take multiple mc samples during eval
             for child in module.children():
                 __eval(child)

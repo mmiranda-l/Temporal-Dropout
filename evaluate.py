@@ -8,8 +8,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from matplotlib.lines import Line2D
 import matplotlib
 matplotlib.rc('font', **{"size":14})
 
@@ -118,22 +116,22 @@ def evaluate(
     sorted_preds = y_pred_concatenated[index_sorted_preds]
     sorted_y_true = y_true_concatenated[index_sorted_preds]
     sorted_eps = y_eps_concatenated[index_sorted_preds]
-    #sorted_alea = y_alea_concatenated[index_sorted_preds]
+    sorted_alea = y_alea_concatenated[index_sorted_preds]
     
 
 
-    #ax[0,0].plot(np.arange(0, len(y_eps_concatenated)), sorted_preds + sorted_std, c="b", alpha=.8, label="Epistemic Uncertainty")
-    #ax[0,0].plot(np.arange(0, len(y_eps_concatenated)), sorted_preds - sorted_std,c="b", alpha=.8, label="Epistemic Uncertainty")
-    #ax[0,0].plot(np.arange(0, len(sorted_y_true)), sorted_y_true, label="Target", c="blue")
+    ax[0,0].plot(np.arange(0, len(y_eps_concatenated)), sorted_preds + sorted_eps, c="b", alpha=.8, label="Epistemic Uncertainty")
+    ax[0,0].plot(np.arange(0, len(y_eps_concatenated)), sorted_preds - sorted_eps,c="b", alpha=.8, label="Epistemic Uncertainty")
+    ax[0,0].plot(np.arange(0, len(sorted_y_true)), sorted_y_true, label="Target", c="blue")
 
-    # ax[0,0].fill_between(np.arange(0, len(y_alea_concatenated)), sorted_preds + (sorted_eps + sorted_alea), sorted_preds - (sorted_eps + sorted_alea), color='grey', alpha=.5, label="Epistemic + Aleatoric")
+    ax[0,0].fill_between(np.arange(0, len(y_alea_concatenated)), sorted_preds + (sorted_eps + sorted_alea), sorted_preds - (sorted_eps + sorted_alea), color='grey', alpha=.5, label="Epistemic + Aleatoric")
 
-    # ax[0,0].fill_between(np.arange(0, len(y_eps_concatenated)), sorted_preds + sorted_eps, sorted_preds - sorted_eps, color='blue', alpha=.5, label="Epistemic")
-    # ax[0,0].plot(np.arange(0, len(y_pred_concatenated)), sorted_preds, label="Mean Prediction", c="red")
-    # #ax[0,0].set_ylim(0)
-    # plt.xlabel("Sample")
-    # plt.ylabel("Prediction")    
-    # plt.legend(fontsize=10)
+    ax[0,0].fill_between(np.arange(0, len(y_eps_concatenated)), sorted_preds + sorted_eps, sorted_preds - sorted_eps, color='blue', alpha=.5, label="Epistemic")
+    ax[0,0].plot(np.arange(0, len(y_pred_concatenated)), sorted_preds, label="Mean Prediction", c="red")
+    #ax[0,0].set_ylim(0)
+    plt.xlabel("Sample")
+    plt.ylabel("Prediction")    
+    plt.legend(fontsize=10)
 
 
 

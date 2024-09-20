@@ -22,24 +22,16 @@ class ConcreteTemporalDropout(nn.Module):
         
     def forward(self, x):
         p = torch.sigmoid(self.p_logit)
-        #print(x)
         out = self._concrete_dropout(x, p)
-        #print(out)
-        #sum_of_square = 0
-        # for param in layer.parameters():
-        #     sum_of_square += torch.sum(torch.pow(param, 2))
-        
+
         #weights_regularizer = self.weight_regularizer * sum_of_square / (1 - p)
         
         dropout_regularizer = p * torch.log(p)
         dropout_regularizer += (1. - p) * torch.log(1. - p)
         
         input_dimensionality = x[0].numel() # Number of elements of first item in batch
-        dropout_regularizer *= self.dropout_regularizer * input_dimensionality
+        dropout_regularizer *= self.dropout_regularizer * input_dimensionality #used for loss 
         
-        #regularization = weights_regularizer + 
-        regularization = dropout_regularizer
-        #return out, regularization
         return out
         
     def _concrete_dropout(self, x, p):
