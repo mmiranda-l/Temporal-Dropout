@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import class_weight
 
-import seaborn as sns
 from matplotlib.lines import Line2D
 import matplotlib
 matplotlib.rc('font', **{"size":14})

@@ -1,9 +1,6 @@
 import yaml
 import argparse
 import os
-import sys
-import time
-import gc
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -63,10 +60,10 @@ def evaluate(
             y_pred_mean = y_pred.mean(axis=-1)
             
             y_eps = y_pred.std(axis=-1)
-            #y_alea = np.sqrt(np.exp(var_p_run_te[r])).mean(axis=-1) 
+            y_alea = np.sqrt(np.exp(var_p_run_te[r])).mean(axis=-1) 
             
             y_eps_concatenated.append(y_eps)
-            #y_alea_concatenated.append(y_alea)
+            y_alea_concatenated.append(y_alea)
         
         y_pred_concatenated.append(y_pred_mean)#to create plots
 
