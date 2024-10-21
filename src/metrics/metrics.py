@@ -1,6 +1,6 @@
 import numpy as np
 
-from .metric_predictions import R2Score, MAPE, RMSE, MAE, BIAS
+from .metric_predictions import R2Score, MAPE, RMSE, MAE, BIAS, rRMSE,MedAE,D2score,TweediePoisson, PCorr
 
 class BaseMetrics(object):
 	"""central metrics class to provide standard metric types"""
@@ -54,7 +54,7 @@ class BaseMetrics(object):
 
 
 class RegressionMetrics(BaseMetrics):
-    def __init__(self, metric_types=["R2","RMSE","MAE", "MAPE", "BIAS"]):
+    def __init__(self, metric_types=["R2","RMSE", "rRMSE", "MAE", "MedAE", "MAPE", "BIAS", "PCorr"]): 
         """build RegressionMetrics
 
         Parameters
@@ -69,10 +69,19 @@ class RegressionMetrics(BaseMetrics):
                 self.metric_dict["R2"] = R2Score()
             elif "mae"==metric:
                 self.metric_dict["MAE"] = MAE()
+            elif "medae"==metric:
+                self.metric_dict["MedAE"] = MedAE()
             elif "rmse"==metric:
                 self.metric_dict["RMSE"] = RMSE()
+            elif "rrmse"==metric:
+                self.metric_dict["rRMSE"] = rRMSE()
             elif "mape"==metric:
                 self.metric_dict["MAPE"] = MAPE()
             elif "bias"==metric:
                 self.metric_dict["BIAS"] = BIAS()
-
+            elif "tweediepoisson"==metric:
+                self.metric_dict["Tweedie"] = TweediePoisson()
+            elif "d2score"==metric:
+                self.metric_dict["D2"] = D2score()
+            elif "pcorr" == metric:
+                self.metric_dict["PCorr"] = PCorr()

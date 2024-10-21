@@ -1,5 +1,5 @@
-output_dir_folder: ./out/
-input_dir_folder: ./data/
+output_dir_folder: /home/mena/Documents/colaborations/Temporal-Dropout/out/
+input_dir_folder: /home/mena/OneDrive/Publications/data/new_pixel_all
 
 #data_name: lfmc
-data_name: yield_cereals
+data_name: yield_cereals_train

@@ -52,8 +52,10 @@ def evaluate(
         y_pred = np.squeeze(y_pred)
         y_true_concatenated.append(y_true)#to create plots
 
-        if y_pred.shape[1] > 1 or len(y_pred.shape)==2: #calculate mean of predictions for evaluation
+        if len(y_pred.shape)==2 and y_pred.shape[1] > 1: #calculate mean of predictions for evaluation
             y_pred_mean = y_pred.mean(axis=-1)
+        else:
+            y_pred_mean = y_pred
         y_pred_concatenated.append(y_pred_mean)#to create plots
 
         d_me = RegressionMetrics()
