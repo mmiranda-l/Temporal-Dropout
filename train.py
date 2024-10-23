@@ -39,7 +39,6 @@ def main_run(config_file):
     if "input_views" not in preprocess_args:
         preprocess_args["input_views"] = view_names
     preprocess_views(data_views_all, **preprocess_args)
-    indexs_ = data_views_all.get_all_identifiers() 
     
     run_id_mlflow = None 
     metadata_r = {"epoch_runs":[], "full_prediction_time":[], "training_time":[], "best_score":[] }
@@ -110,7 +109,16 @@ def main_run(config_file):
                 data_save_te.save(f"{output_dir_folder}/pred/{data_name}/test/{method_name}", ind_views=True,xarray=False)
                 mlf_logger.experiment.log_artifact(run_id_mlflow, f"{output_dir_folder}/pred/{data_name}/test/{method_name}/out_run_variance-{r:02d}_fold-{k:02d}.csv",
                                                 artifact_path=f"preds/test")
-                
+            
+            if "p_i" in list(outputs_tr.keys()):
+                print(outputs_tr["p_i"])
+                df_tr = pd.DataFrame(outputs_tr["p_i"], columns=["pi"])
+                df_tr.to_csv(f"{output_dir_folder}/pred/{data_name}/train/{method_name}/out_run_pi-{r:02d}_fold-{k:02d}.csv")
+                print(df_tr)
+                df_te = pd.DataFrame(outputs_te["p_i"], columns=["pi"])
+                df_te.to_csv(f"{output_dir_folder}/pred/{data_name}/test/{method_name}/out_run_pi-{r:02d}_fold-{k:02d}.csv")
+
+                                
             
             print(f"Fold {k+1}/{kfolds} of Run {r+1}/{runs} in {method_name} finished...")
     if type(run_id_mlflow) != type(None):

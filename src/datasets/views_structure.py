@@ -473,28 +473,9 @@ def load_structure(name_path: str):
 def xray_to_dataviews(xray_data: xray.Dataset):
     all_possible_index = xray_data.coords["identifier"].values
     
-    dataviews = DataViews()    
-    dataviews.view_names = xray_data.attrs["view_names"]
-    dataviews.target_names = xray_data.attrs["target_names"]
-    dataviews.supervised_tag = xray_data.attrs["supervised_tag"].astype(bool)
-
-    #ask for a block of memory together is faster than individually
-    aux_xray = xray_data["inverted_ident"]*np.arange(1,1+len(dataviews.view_names))
-    if (aux_xray == 0).sum() != 0: #contain nans
-        aux_xray = aux_xray.where(aux_xray != 0 ) - 1
-        dataviews.inverted_ident = dict(zip(all_possible_index, aux_xray.values.tolist()))
-    else:
-        aux_xray = aux_xray-1
-        dataviews.inverted_ident = dict(zip(all_possible_index, aux_xray.values.astype(int).tolist()))
+    dataviews = DataViews()
+    for view_name in xray_data.attrs["view_names"]: 
+        dataviews.add_view(xray_data[view_name].values, identifiers=all_possible_index, name=view_name)
+    dataviews.add_target(xray_data["target"].values, identifiers=all_possible_index,target_names=xray_data.attrs["target_names"])
     dataviews.train_mask_identifiers = dict(zip(all_possible_index, xray_data["train_mask"].values.astype(bool)))
-    if dataviews.supervised_tag:
-        dataviews.identifiers_target = dict(zip(all_possible_index, xray_data["target"].values))
-
-    for view_n in dataviews.view_names:
-        #check nans cause of missingness
-        data_variable = xray_data[view_n].dropna("identifier", how = "all") #variable array for each view
-
-        dataviews.views_data[view_n] = data_variable.values
-        dataviews.views_cardinality[view_n] = len(data_variable["identifier"])
-        dataviews.views_data_ident2indx[view_n] = dict(zip(data_variable["identifier"].values,np.arange(len(data_variable["identifier"]))))
     return dataviews

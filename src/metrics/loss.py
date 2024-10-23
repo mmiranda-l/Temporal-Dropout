@@ -20,13 +20,17 @@ class NLL(nn.Module):
         loss = 0
         prediction = prediction.mean(axis=-1)
         variance = variance.mean(axis=-1)
+
         loss = self._nll(mu=prediction, var=variance, target=target)
-        return loss.mean()
+        #return loss.mean()
+        #loss = self.mse(prediction, target)
+        return loss
     
     def _nll(self, mu, var, target, epsilon=1e-8):
         sigma = torch.exp(var)   
-        return 0.5 * torch.mean(torch.log(sigma + epsilon) + (torch.square(target - mu) / (sigma + epsilon)))
-            
+        #return 0.5 * torch.mean(torch.log(sigma + epsilon) + torch.square(target - mu) / (sigma + epsilon))
+        return self.mse(mu, target)
+
 
 if __name__ =="__main__":
     t = torch.randn(10)

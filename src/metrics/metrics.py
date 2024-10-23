@@ -1,6 +1,6 @@
 import numpy as np
 
-from .metric_predictions import R2Score, MAPE, RMSE, MAE, BIAS
+from .metric_predictions import R2Score, MAPE, RMSE, MAE, BIAS, ECE, PICP, PU
 
 class BaseMetrics(object):
 	"""central metrics class to provide standard metric types"""
@@ -17,7 +17,7 @@ class BaseMetrics(object):
 		self.metric_types = [v.lower() for v in metric_types]
 		self.metric_dict = {}
 
-	def __call__(self, prediction, target):
+	def __call__(self, prediction, target, kwargs={}):
 		"""call forward for each metric in collection
 
 		Parameters
@@ -38,7 +38,7 @@ class BaseMetrics(object):
 			self.n_samples = []
 
 		#forward over all metrics
-		return {name: func(prediction, target) for (name, func) in self.metric_dict.items()}
+		return {name: func(prediction, target, **kwargs) for (name, func) in self.metric_dict.items()}
 
 	def get_metric_types(self):
 		"""return list of metric types inside collection
@@ -54,7 +54,7 @@ class BaseMetrics(object):
 
 
 class RegressionMetrics(BaseMetrics):
-    def __init__(self, metric_types=["R2","RMSE","MAE", "MAPE", "BIAS"]):
+    def __init__(self, metric_types=["R2","RMSE","MAE", "MAPE", "BIAS", "ECE", "PICP", "PU"]):
         """build RegressionMetrics
 
         Parameters
@@ -75,4 +75,9 @@ class RegressionMetrics(BaseMetrics):
                 self.metric_dict["MAPE"] = MAPE()
             elif "bias"==metric:
                 self.metric_dict["BIAS"] = BIAS()
-
+            elif "picp"==metric:
+                self.metric_dict["PICP"] = PICP()
+            elif "ece"==metric:
+                self.metric_dict["ECE"] = ECE()
+            elif "pu"==metric:
+                self.metric_dict["PU"] = PU()

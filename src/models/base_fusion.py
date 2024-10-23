@@ -88,7 +88,7 @@ class ModelFusion(_BaseViewsLightning):
             outputs_ = self._forward(views)
             preds.append(outputs_["prediction"])
             vars.append(outputs_["variance"])
-        return {"prediction": torch.stack(preds, axis=-1), "variance": torch.stack(vars, axis=-1)}
+        return {"prediction": torch.stack(preds, axis=-1), "variance": torch.stack(vars, axis=-1), "p_i": outputs_["p_i"]}
 
     def prepare_batch(self, batch: dict) -> list:
         views_data, views_target = batch["views"], batch["target"]
@@ -114,10 +114,9 @@ class ModelFusion(_BaseViewsLightning):
 
         views_dict, views_target = self.prepare_batch(batch)
         out_dic = self(views_dict) 
-        #if self.hparams_initial.loss_args["name"].lower() == "nll":
-        #    return { "objective": self.criteria(out_dic["prediction"], out_dic["variance"], views_target) }
         if isinstance(self.criteria, NLL) and self.uq:
             return {"objective": self.criteria(out_dic["prediction"], out_dic["variance"], views_target)}
+
         return { "objective": self.criteria(out_dic["prediction"], views_target) }
     #
     def transform(self,

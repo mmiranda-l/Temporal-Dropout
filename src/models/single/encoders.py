@@ -21,6 +21,7 @@ class MLP(Base_Encoder):
         if layer_sizes is None:
             layer_sizes = (128,)
         layer_sizes = (feature_size,) + layer_sizes
+        print(layer_sizes, "Layer Size")
         self.encoder_output = layer_sizes[-1]
         layers = []
         # other layers
@@ -36,6 +37,8 @@ class MLP(Base_Encoder):
         self.layers = torch.nn.Sequential(*layers)
 
     def forward(self, x):
+        print(x.shape, "SHAPE")
+
         return {"rep": self.layers(x)}
 
     def get_output_size(self):
@@ -66,7 +69,7 @@ class MLP_Seq(Base_Encoder):
                 torch.nn.Sequential(
                     torch.nn.Linear(layer_sizes[l_id], layer_sizes[l_id + 1]) if approx_type != "dropconnect" else WeightDropLinear(layer_sizes[l_id], layer_sizes[l_id + 1]),
                     activation(),
-                    #nn.BatchNorm1d(layer_sizes[l_id+1], affine=True) if batchnorm else nn.Identity(),
+                    nn.BatchNorm1d(layer_sizes[l_id+1], affine=True) if batchnorm else nn.Identity(),
                     nn.Dropout(p=dropout) if dropout!=0 else nn.Identity(),
                 )
             )

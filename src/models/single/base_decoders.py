@@ -48,10 +48,9 @@ class Generic_Decoder(Base_Decoder):
         return self.out_dims
     
 class Generic_Bayesian_Decoder(Generic_Decoder):
-    def __init__(self, decoder: nn.Module, out_dims: int, mc_samples: int=20, **kwargs):
+    def __init__(self, decoder: nn.Module, out_dims: int, **kwargs):
         super().__init__(decoder, out_dims, **kwargs)
-        self.linear_var = nn.Linear(self.pre_decoder.get_output_size(), self.out_dims) # second prediction head to model variance
-        self.mc_samples = mc_samples
+        self.linear_var = nn.Linear(self.pre_decoder.get_output_size(), self.out_dims)
 
     def forward(self, x):
         if type(x) == dict:
@@ -65,9 +64,7 @@ class Generic_Bayesian_Decoder(Generic_Decoder):
             final_rep = self.linear_layer(out_forward)
             final_var = self.linear_var(out_forward)
             out_forward = {} #for returning 
-        return {"prediction": final_rep, "variance": final_var}
-        
-    def get_output_size(self):
-        return self.out_dims
 
+        return {"prediction": final_rep, "variance": final_var, "p_i": x["p_i"]}
+        
 

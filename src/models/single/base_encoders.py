@@ -56,6 +56,7 @@ class Generic_Encoder(Base_Encoder):
         
         return {
             "rep": final_rep,
+            #"p_i": p
             }
 
     def get_output_size(self):

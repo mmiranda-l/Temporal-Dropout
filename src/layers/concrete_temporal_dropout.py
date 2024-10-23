@@ -7,8 +7,8 @@ class ConcreteTemporalDropout(nn.Module):
     def __init__(self, 
                  weight_regularizer=1e-6,
                  dropout_regularizer=1e-5, 
-                 init_min=0.1, 
-                 init_max=0.1, 
+                 init_min=0.01, 
+                 init_max=0.5, 
                  ):
         super(ConcreteTemporalDropout, self).__init__()
 
@@ -31,7 +31,7 @@ class ConcreteTemporalDropout(nn.Module):
         
         input_dimensionality = x[0].numel() # Number of elements of first item in batch
         dropout_regularizer *= self.dropout_regularizer * input_dimensionality #used for loss 
-        
+        #return out, p
         return out
         
     def _concrete_dropout(self, x, p):
