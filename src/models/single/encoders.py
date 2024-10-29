@@ -84,19 +84,100 @@ class RNNet(Base_Encoder):
         )
 
     def forward(self, x):
-        # if self.pack_seq:
-        #     lengths = torch.Tensor([ (torch.isfinite( v ).sum(axis=-1)!=0).sum() for v in x]).cpu() 
-        #     x =  nn.utils.rnn.pack_padded_sequence(x, lengths, batch_first=True, enforce_sorted=False)
-        
         rnn_out, (h_n, c_n) = self.rnn(x)
-
-        # if self.pack_seq:
-        #     seq_unpacked, lens_unpacked = nn.utils.rnn.pad_packed_sequence(rnn_out, batch_first=True, padding_value=0.0 )
-        #     masks = (lengths-1).view(-1, 1, 1).expand(-1, seq_unpacked.size(1), seq_unpacked.size(2)).to(seq_unpacked.device).type(torch.int64)
-        #     rnn_out = seq_unpacked.gather(0, masks)
-
         rnn_out = rnn_out[:, -1] # only consider output of last time step-- what about attention-aggregation
         return {"rep": self.fc(rnn_out)}
 
     def get_output_size(self):
         return self.layer_size
+
+class TransformerNet(Base_Encoder):
+    def __init__(
+        self,
+        feature_size: int,
+        layer_size: int = 128,
+        dropout: float = 0.0,
+        num_layers: int = 1,
+        num_heads: int = 1,
+        len_max_seq: int = 24,
+        fixed_pos_encoding: bool = True,
+        **kwargs,
+    ):
+        super(TransformerNet, self).__init__()
+        self.feature_size = feature_size
+        self.layer_size = layer_size
+        self.num_layers = num_layers
+        self.dropout = dropout
+        self.len_max_seq = len_max_seq+ 1 #for class token
+        self.num_heads = num_heads
+        self.fixed_pos_encoding = fixed_pos_encoding
+
+        self.cls_token = torch.nn.Parameter(torch.zeros(1, 1, self.feature_size))  
+        self.pos_encoder = PositionalEncoding(
+            d_model=self.feature_size, 
+            dropout=self.dropout,
+            max_len=self.len_max_seq)
+        
+        encoder_layer = torch.nn.TransformerEncoderLayer(
+            d_model=self.feature_size,
+            nhead=self.num_heads,
+            dim_feedforward=self.layer_size,
+            dropout=self.dropout,
+            batch_first=True,
+            **kwargs
+        )
+        self.tr_encoder = torch.nn.TransformerEncoder(encoder_layer=encoder_layer,num_layers=self.num_layers)
+
+    def forward(self, x, src_key_padding_mask=None, **kwargs):
+        # add cls token to input sequence
+        x = torch.cat((self.cls_token.expand(x.shape[0], -1, -1), x), 1)
+
+        # add time step for cls token in src_key_padding_mask
+        if src_key_padding_mask is not None:
+            src_key_padding_mask = torch.cat(
+                (
+                    torch.zeros_like(src_key_padding_mask[:, -1].reshape(-1, 1)).bool(),  #always false to attend cls token
+                    src_key_padding_mask,  # for rest fo x
+                ),
+                dim=1)
+        if self.fixed_pos_encoding: # add position encoding
+            x = self.pos_encoder(x)
+        
+        # pass x through transformer encoder
+        x = self.tr_encoder(x, src_key_padding_mask=src_key_padding_mask)
+        
+        return {"rep": x[:, 0, :]} # extract class token feature: 
+
+    def get_output_size(self):
+        return self.feature_size
+
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
+        super().__init__()
+
+        self.dropout = nn.Dropout(p=dropout)
+
+        # create a long enough position encoding
+        position_encoding = torch.zeros(1, max_len, d_model, )
+
+        position = torch.arange(
+            max_len, dtype=torch.float32
+        ).reshape(-1, 1) / torch.pow(torch.tensor(10000), torch.arange(0, d_model, 2, dtype=torch.float32) / d_model)
+        position_encoding[0, :, 0::2] = torch.sin(position)
+        position_encoding[0, :, 1::2] = torch.cos(position[:, :(-1 if d_model%2 != 0 else int(d_model/2))])
+
+        # register_buffer => Tensor which is not a parameter, but should be part of the modules state.
+        # Used for tensors that need to be on the same device as the module.
+        # persistent=False tells PyTorch to not add the buffer to the state dict (e.g. when we save the model)
+        self.register_buffer("position_encoding", position_encoding, persistent=False)
+
+    def forward(self, x):
+        """
+
+        Parameters
+        ----------
+        x : Tensor, shape [batch_size, seq_len, embedding_dim]
+        """
+        x = x + self.position_encoding[:, :x.shape[1], :]  # based on the seq len of x, add position encoding
+        return self.dropout(x)
