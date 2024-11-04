@@ -74,7 +74,8 @@ def InputFusion_train(train_data: dict, val_data = None,
         monitor_name = "train_objective"
     train_dataloader = _to_loader(train_data, batch_size=batch_size)
     extra_objects = prepare_loggers(data_name, method_name, run_id, fold_id, folder_c, model.hparams_initial, run_id_mlflow, monitor_name, **early_stop_args)
-    trainer = pl.Trainer(max_epochs=max_epochs, accelerator="gpu", devices = 1,
+    device = "gpu" if torch.cuda.is_available() else "cpu"
+    trainer = pl.Trainer(max_epochs=max_epochs, accelerator=device, devices = 1,
                          callbacks=extra_objects["callbacks"],logger=extra_objects["loggers"])
     trainer.fit(model, train_dataloader, val_dataloaders=(val_dataloader if type(val_data) != type(None) else None))
 
